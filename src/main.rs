@@ -46,13 +46,9 @@ fn process_args(args: Args)  {
 		if path.is_dir() {
 			Args::command().error(ErrorKind::InvalidValue, "cpar does not accept directories.").exit();
 		}	
-
-		// let output_file = 
-		// // copies file
-		// fs::copy(from, to)
-		// println!("{:?}", v)
-		println!("{:?}", args.files)
 	}
+
+	println!("{:?}", args.files)
     
     // cpar src/ContactForm* src/MembershipForm* ->
     // ContactForm.tsx -> MembershipForm.tsx
