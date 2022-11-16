@@ -12,7 +12,7 @@ mod tests {
     use crate::cli::Args;
     use std::{
         fs,
-        path::Path,
+        path::{Path, self},
         process::{Command, ExitStatus},
     };
 
@@ -20,7 +20,7 @@ mod tests {
 
     struct TestResult {
         pub status: ExitStatus,
-        pub stdout: String,
+        // pub stdout: String,
         pub stderr: String,
     }
 
@@ -34,28 +34,29 @@ mod tests {
 
         TestResult {
             status: result.status,
-            stdout: String::from_utf8_lossy(&result.stdout).to_string(),
+            // stdout: String::from_utf8_lossy(&result.stdout).to_string(),
             stderr: String::from_utf8_lossy(&result.stderr).to_string()
         }
     }
 
     fn init_files(files: Vec<&str>) {
-        fs::create_dir_all(CACHE).unwrap();
+		if Path::new(CACHE).exists() {
+			cleanup_files()
+		}
+
+		fs::create_dir_all(CACHE).unwrap();
+
         for filename in files {
             let path = Path::new(CACHE).join(filename);
             fs::write(
                 path,
                 "// not intended for use.\nconsole.log('Hello World!');",
-            )
-            .unwrap()
+            ).unwrap()
         }
     }
 
-    fn cleanup_files(success: bool) {
-        fs::remove_dir_all(CACHE).unwrap();
-        if !success {
-            panic!()
-        }
+    fn cleanup_files() {
+        fs::remove_dir_all(CACHE).unwrap()
     }
 
     #[test]
@@ -71,11 +72,12 @@ mod tests {
             panic!()
         }
     }
-
+	
+	
 	// TODO: use real testing library for setup / cleanup
 	// TODO: create shorthands for path.join
 
-    // test case for name.ext -> new_name.ext
+	// test case for name.ext -> name.new_exts
     #[test]
     fn copies_multiple_names() {
         let files = vec!["temp-1.js", "temp-2.js"];
@@ -92,6 +94,7 @@ mod tests {
         let result = run_cpar(args);
 		println!("\n\n-- ERROR --\n{}", &result.status);
         if result.status.code() != Some(0) {
+			cleanup_files();
             panic!()
         }
 
@@ -105,10 +108,51 @@ mod tests {
 
         for target in targets {
             if !paths.contains(&format!(".test-cache/{}", target)) {
+				cleanup_files();
                 panic!("{}", target)
             }
         }
 
-        cleanup_files(true);
+		cleanup_files();
     }
+
+	// test case for name.ext -> new_name.ext
+	#[test]
+    fn copies_multiple_extensions() {
+        let files = vec!["temp-1.astro", "temp-1.tsx", "temp-1.scss"];
+        let targets = vec!["temp-2.astro", "temp-2.tsx", "temp-2.scss"];
+        init_files(files);
+
+        let args = Args {
+            input_path: String::from(".test-cache/temp-1$"),
+            output_path: String::from(".test-cache/temp-2$"),
+        };
+
+        println!("{:?}", args);
+
+        let result = run_cpar(args);
+		println!("\n\n-- ERROR --\n{}", &result.status);
+        if result.status.code() != Some(0) {
+			cleanup_files();
+            panic!()
+        }
+
+        let paths: Vec<String> = fs::read_dir(CACHE)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .map(|buffer| buffer.display().to_string())
+            .collect();
+
+		println!("{:?}", paths);
+
+        for target in targets {
+            if !paths.contains(&format!(".test-cache/{}", target)) {
+				cleanup_files();
+                panic!("{}", target)
+            }
+        }
+
+		cleanup_files();
+    }
+
 }

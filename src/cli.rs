@@ -13,6 +13,8 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 	about = "Copies and mass-renames files using the variable character ($)", 
 	long_about = None
 )]
+
+// TODO: add example to help page
 pub struct Args {
     /// The files to be copied and renamed.
 	#[arg(required = true)]
