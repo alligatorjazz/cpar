@@ -68,3 +68,4 @@ Probably a bunch, but the ones that prodded me to make the tool in the first pla
 - Implement a proper Rust testing library - the included tests are rudimentary and use the standard library.
 - Change tests such that they can run in parallel (currently they only run consecutively)
 - Find a way to use the actual Bash wildcard character (`*`) in place of (`$`).
+- Publish to Homebrew + some APT-compatible repository
